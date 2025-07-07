@@ -101,7 +101,7 @@ public class UsdtDepositService {
                 balance.setUsdtBalance(balance.getUsdtBalance() + req.getAmount());
                 balanceRepository.save(balance);
 
-                // ✅ Send confirmation email & FCM push
+                // ✅ Send confirmation email 
                 try {
                     Long userIdLong = Long.parseLong(req.getUserId());
                     userRepository.findById(userIdLong).ifPresent(user -> {
@@ -112,14 +112,6 @@ public class UsdtDepositService {
                                 req.getAmount()
                         );
 
-                        // 🔔 FCM Push
-                        if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
-                            try {
-                                notificationService.sendUsdtDepositApproved(user.getFcmToken(), req.getAmount());
-                            } catch (FirebaseMessagingException e) {
-                                System.err.println("❌ FCM failed for USDT deposit: " + e.getMessage());
-                            }
-                        }
                     });
                 } catch (NumberFormatException e) {
                     System.err.println("❌ Invalid userId format for USDT deposit: " + req.getUserId());

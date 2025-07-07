@@ -62,7 +62,7 @@ public class UsdtWithdrawService {
                 request.setApproved(true);
                 withdrawRepo.save(request);
 
-                // 📩 Email + 🔔 FCM Notification
+                // 📩 Email 
                 try {
                     Long userIdLong = Long.parseLong(request.getUserId());
                     userRepository.findById(userIdLong).ifPresent(user -> {
@@ -73,14 +73,7 @@ public class UsdtWithdrawService {
                                 request.getAmount()
                         );
 
-                        // 🔔 Push Notification
-                        if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
-                            try {
-                                notificationService.sendUsdtWithdrawApproved(user.getFcmToken(), request.getAmount());
-                            } catch (FirebaseMessagingException e) {
-                                System.err.println("❌ FCM failed for USDT withdrawal: " + e.getMessage());
-                            }
-                        }
+                        
                     });
                 } catch (NumberFormatException e) {
                     System.err.println("❌ Invalid userId format in USDT withdrawal: " + request.getUserId());

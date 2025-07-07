@@ -57,7 +57,7 @@ public class InrWithdrawService {
                 request.setApproved(true);
                 withdrawRepo.save(request);
 
-                // 📩 Email + 🔔 Push Notification
+                // 📩 Email
                 try {
                     Long userIdLong = Long.parseLong(request.getUserId());
                     userRepository.findById(userIdLong).ifPresent(user -> {
@@ -68,14 +68,6 @@ public class InrWithdrawService {
                                 request.getAmount()
                         );
 
-                        // 🔔 FCM Notification
-                        if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
-                            try {
-                                notificationService.sendInrWithdrawApproved(user.getFcmToken(), request.getAmount());
-                            } catch (FirebaseMessagingException e) {
-                                System.err.println("❌ FCM failed for INR withdrawal: " + e.getMessage());
-                            }
-                        }
                     });
                 } catch (NumberFormatException e) {
                     System.err.println("❌ Invalid userId format in INR withdrawal: " + request.getUserId());

@@ -114,14 +114,7 @@ public class InrDepositService {
                                 req.getAmount()
                         );
 
-                        // ✅ Send FCM push notification
-                        if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
-                            try {
-                                notificationService.sendInrDepositApproved(user.getFcmToken(), req.getAmount());
-                            } catch (FirebaseMessagingException e) {
-                                System.err.println("FCM failed: " + e.getMessage());
-                            }
-                        }
+                        
                     });
                 } catch (NumberFormatException e) {
                     System.err.println("Invalid userId format: " + req.getUserId());
