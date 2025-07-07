@@ -104,7 +104,7 @@ public class InrDepositService {
                 balance.setInrBalance(balance.getInrBalance() + req.getAmount());
                 balanceRepository.save(balance);
 
-                try {
+                /*try {
                     Long userIdLong = Long.parseLong(req.getUserId()); // Convert String → Long
                     userRepository.findById(userIdLong).ifPresent(user -> {
                         // ✅ Send Email
@@ -115,6 +115,27 @@ public class InrDepositService {
                         );
 
                         
+                    });
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid userId format: " + req.getUserId());
+                }*/
+                
+                
+                try {
+                    Long userIdLong = Long.parseLong(req.getUserId());
+                    userRepository.findById(userIdLong).ifPresent(user -> {
+
+                        
+
+                        // Send FCM safely
+                        try {
+                            if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
+                                notificationService.sendInrDepositApproved(user.getFcmToken(), req.getAmount());
+                            }
+                        } catch (FirebaseMessagingException e) {
+                            System.err.println("❌ FCM failed: " + e.getMessage());
+                        }
+
                     });
                 } catch (NumberFormatException e) {
                     System.err.println("Invalid userId format: " + req.getUserId());
