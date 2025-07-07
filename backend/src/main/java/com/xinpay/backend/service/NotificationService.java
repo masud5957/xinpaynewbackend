@@ -1,6 +1,8 @@
 package com.xinpay.backend.service;
 
 import com.google.firebase.messaging.*;
+import com.xinpay.backend.config.FirebaseInitializer;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -8,6 +10,9 @@ public class NotificationService {
 
     // 🔔 Common method to send push notification
     private void sendNotification(String fcmToken, String title, String body) throws FirebaseMessagingException {
+    	
+    	
+    	FirebaseInitializer.init(); // ✅ Make sure Firebase is initialized
         Notification notification = Notification.builder()
                 .setTitle(title)
                 .setBody(body)

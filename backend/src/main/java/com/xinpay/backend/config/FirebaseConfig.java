@@ -52,17 +52,18 @@ public class FirebaseConfig {
 
     @PostConstruct
     public void initializeFirebase() {
-        try (InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream(firebaseCredentialsPath)) {
-
-            if (serviceAccount == null) {
-                throw new IllegalStateException("Firebase credentials file not found at: " + firebaseCredentialsPath);
-            }
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
+        try {
             if (FirebaseApp.getApps().isEmpty()) {
+                InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream(firebaseCredentialsPath);
+
+                if (serviceAccount == null) {
+                    throw new IllegalStateException("Firebase credentials file not found at: " + firebaseCredentialsPath);
+                }
+
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .build();
+
                 FirebaseApp.initializeApp(options);
                 System.out.println("✅ FirebaseApp initialized: " + FirebaseApp.getInstance().getName());
             } else {
@@ -70,7 +71,7 @@ public class FirebaseConfig {
             }
 
         } catch (Exception e) {
-            System.err.println("❌ Firebase init failed: " + e.getMessage());
+            System.err.println("❌ Firebase initialization failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
