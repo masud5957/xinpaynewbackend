@@ -1,3 +1,4 @@
+// ✅ CONTROLLER: UsdtWithdrawController.java
 package com.xinpay.backend.controller;
 
 import com.xinpay.backend.model.UsdtWithdrawRequest;
@@ -19,14 +20,12 @@ public class UsdtWithdrawController {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
 
-    // ✅ User submits USDT withdraw request
     @PostMapping("/request")
     public ResponseEntity<UsdtWithdrawRequest> requestWithdraw(@RequestBody UsdtWithdrawRequest request) {
         UsdtWithdrawRequest savedRequest = withdrawService.saveWithdrawRequest(request);
         return ResponseEntity.ok(savedRequest);
     }
 
-    // ✅ Admin fetches all pending USDT withdrawals
     @GetMapping("/pending")
     public ResponseEntity<List<Map<String, Object>>> getPendingWithdrawals() {
         List<UsdtWithdrawRequest> pendingList = withdrawService.getPendingWithdrawals();
@@ -39,6 +38,7 @@ public class UsdtWithdrawController {
             entry.put("amount", req.getAmount());
             entry.put("walletAddress", req.getWalletAddress());
             entry.put("approved", req.isApproved());
+            entry.put("rejected", req.isRejected());
             if (req.getRequestedAt() != null) {
                 entry.put("requestedAt", formatter.format(req.getRequestedAt()));
             }
@@ -48,18 +48,18 @@ public class UsdtWithdrawController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Admin approves a USDT withdrawal
     @PutMapping("/{id}/approve")
     public ResponseEntity<String> approveWithdraw(@PathVariable Long id) {
         boolean approved = withdrawService.approveWithdrawal(id);
-        if (approved) {
-            return ResponseEntity.ok("✅ USDT Withdrawal approved successfully.");
-        } else {
-            return ResponseEntity.status(404).body("❌ Request not found or insufficient USDT balance.");
-        }
+        return approved ? ResponseEntity.ok("✅ Approved") : ResponseEntity.status(404).body("❌ Not found or insufficient balance");
     }
 
-    // ✅ User sees all their withdrawal history
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<String> rejectWithdraw(@PathVariable Long id) {
+        boolean rejected = withdrawService.rejectWithdrawal(id);
+        return rejected ? ResponseEntity.ok("❌ Rejected") : ResponseEntity.status(404).body("❌ Not found");
+    }
+
     @GetMapping("/all/{userId}")
     public ResponseEntity<List<Map<String, Object>>> getAllByUser(@PathVariable String userId) {
         List<UsdtWithdrawRequest> history = withdrawService.getAllWithdrawalsByUser(userId);
@@ -72,6 +72,7 @@ public class UsdtWithdrawController {
             row.put("amount", entry.getAmount());
             row.put("walletAddress", entry.getWalletAddress());
             row.put("approved", entry.isApproved());
+            row.put("rejected", entry.isRejected());
             if (entry.getRequestedAt() != null) {
                 row.put("requestedAt", formatter.format(entry.getRequestedAt()));
             }
