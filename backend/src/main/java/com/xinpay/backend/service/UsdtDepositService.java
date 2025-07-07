@@ -1,12 +1,10 @@
 package com.xinpay.backend.service;
 
 import com.xinpay.backend.model.Balance;
-
 import com.xinpay.backend.model.UsdtDepositRequest;
 import com.xinpay.backend.repository.BalanceRepository;
 import com.xinpay.backend.repository.UsdtDepositRequestRepository;
 import com.xinpay.backend.repository.UserRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,35 +23,26 @@ public class UsdtDepositService {
 
     @Autowired
     private BalanceRepository balanceRepository;
-    
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
     private NotificationService notificationService;
 
     public UsdtDepositRequest uploadDeposit(String userId, MultipartFile file, Double amount) throws IOException {
         String originalName = file.getOriginalFilename();
-        long size = file.getSize();
-        if (amount == null || amount <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than 0");
+        if (amount == null || amount <= 0 || originalName == null || originalName.isEmpty() || file.getSize() == 0) {
+            throw new IOException("Invalid input");
         }
 
-
-        if (originalName == null || originalName.isEmpty() || size == 0) {
-            throw new IOException("Invalid file. Name or size is missing.");
-        }
-
-        String extension = "";
-        if (originalName.contains(".")) {
-            extension = originalName.substring(originalName.lastIndexOf('.'));
-        }
-
+        String extension = originalName.contains(".") ? originalName.substring(originalName.lastIndexOf('.')) : "";
         String fileName = UUID.randomUUID() + extension;
         String uploadDir = System.getProperty("user.home") + File.separator + "xinpay-uploads" + File.separator;
+
         File uploadPath = new File(uploadDir);
         if (!uploadPath.exists()) uploadPath.mkdirs();
 
@@ -63,9 +52,9 @@ public class UsdtDepositService {
         UsdtDepositRequest deposit = new UsdtDepositRequest();
         deposit.setUserId(userId);
         deposit.setImageUrl(fileName);
-        deposit.setVerified(false);
         deposit.setAmount(amount);
-        
+        deposit.setVerified(false);
+        deposit.setRejected(false); // ✅ set rejected = false
 
         return usdtDepositRequestRepository.save(deposit);
     }
@@ -78,56 +67,54 @@ public class UsdtDepositService {
         return usdtDepositRequestRepository.findAllByUserIdOrderByIdDesc(userId);
     }
 
+    public List<UsdtDepositRequest> getPendingDeposits() {
+        return usdtDepositRequestRepository.findByVerifiedFalseAndRejectedFalse();
+    }
+
     public boolean verifyDeposit(Long id) {
         Optional<UsdtDepositRequest> depositOpt = usdtDepositRequestRepository.findById(id);
         if (depositOpt.isPresent()) {
             UsdtDepositRequest req = depositOpt.get();
-
-            if (!req.isVerified()) {
+            if (!req.isVerified() && !req.isRejected()) {
                 req.setVerified(true);
-                req.setVerifiedAt(java.time.LocalDateTime.now());
+                req.setVerifiedAt(LocalDateTime.now());
                 usdtDepositRequestRepository.save(req);
 
-                // 🔁 Update user's USDT balance
-                Balance balance = balanceRepository.findById(req.getUserId())
-                        .orElseGet(() -> {
-                            Balance newBalance = new Balance();
-                            newBalance.setUserId(req.getUserId());
-                            newBalance.setInrBalance(0.0);
-                            newBalance.setUsdtBalance(0.0);
-                            return newBalance;
-                        });
+                Balance balance = balanceRepository.findById(req.getUserId()).orElseGet(() -> {
+                    Balance b = new Balance();
+                    b.setUserId(req.getUserId());
+                    b.setInrBalance(0.0);
+                    b.setUsdtBalance(0.0);
+                    return b;
+                });
 
                 balance.setUsdtBalance(balance.getUsdtBalance() + req.getAmount());
                 balanceRepository.save(balance);
 
-                // ✅ Send confirmation email 
                 try {
                     Long userIdLong = Long.parseLong(req.getUserId());
                     userRepository.findById(userIdLong).ifPresent(user -> {
-                        // ✉️ Email
-                        emailService.sendUsdtDepositApprovedEmail(
-                                user.getEmail(),
-                                user.getFullName(),
-                                req.getAmount()
-                        );
-
+                        emailService.sendUsdtDepositApprovedEmail(user.getEmail(), user.getFullName(), req.getAmount());
                     });
-                } catch (NumberFormatException e) {
-                    System.err.println("❌ Invalid userId format for USDT deposit: " + req.getUserId());
-                }
+                } catch (NumberFormatException ignored) {}
             }
-
             return true;
         }
-
         return false;
     }
 
-
-
-    public List<UsdtDepositRequest> getPendingDeposits() {
-        return usdtDepositRequestRepository.findByVerifiedFalse();
+    // ✅ NEW: Reject Deposit
+    public boolean rejectDeposit(Long id) {
+        Optional<UsdtDepositRequest> depositOpt = usdtDepositRequestRepository.findById(id);
+        if (depositOpt.isPresent()) {
+            UsdtDepositRequest req = depositOpt.get();
+            if (!req.isVerified()) {
+                req.setRejected(true);
+                usdtDepositRequestRepository.save(req);
+            }
+            return true;
+        }
+        return false;
     }
 
     public double getTotalBalanceByUser(String userId) {

@@ -16,12 +16,13 @@ public class UsdtDepositRequest {
     private String userId;
     private String imageUrl;
     private boolean verified;
+    private boolean rejected; // ✅ New field
     private Double amount;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") // ✅ Format for JSON response
-    private LocalDateTime verifiedAt; // ✅ Timestamp for verification
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime verifiedAt;
 
-    // ✅ Getters and Setters
+    // --- Getters and Setters ---
 
     public Long getId() {
         return id;
@@ -53,6 +54,14 @@ public class UsdtDepositRequest {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
+    }
+
+    public boolean isRejected() {
+        return rejected;
+    }
+
+    public void setRejected(boolean rejected) {
+        this.rejected = rejected;
     }
 
     public Double getAmount() {

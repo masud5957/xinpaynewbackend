@@ -10,9 +10,7 @@ public interface UsdtDepositRequestRepository extends JpaRepository<UsdtDepositR
 
     Optional<UsdtDepositRequest> findTopByUserIdOrderByIdDesc(String userId);
 
-    List<UsdtDepositRequest> findByVerifiedFalse();
-
     List<UsdtDepositRequest> findAllByUserIdOrderByIdDesc(String userId);
 
-    List<UsdtDepositRequest> findByUserIdAndVerifiedTrue(String userId); // ✅ For balance calculation
+    List<UsdtDepositRequest> findByVerifiedFalseAndRejectedFalse(); // ✅ Only show pending + not rejected
 }
