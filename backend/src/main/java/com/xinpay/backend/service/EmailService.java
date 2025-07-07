@@ -1,16 +1,23 @@
 // File: com.xinpay.backend.service.EmailService.java
 package com.xinpay.backend.service;
+import com.xinpay.backend.model.User;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
+
 @Service
 public class EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     public void sendOtpEmail(String toEmail, String otp) {
         String subject = "XinPay - OTP Verification Code";
@@ -124,6 +131,22 @@ public class EmailService {
 
         mailSender.send(message);
     }
+    
+    
+    public void sendInrDepositEmailAndNotify(User user, double amount) {
+        // Step 1: Send email using existing method
+        sendInrDepositApprovedEmail(user.getEmail(), user.getFullName(), amount);
+
+        // Step 2: Send FCM push notification if token exists
+        if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
+            try {
+                notificationService.sendInrDepositApproved(user.getFcmToken(), amount);
+            } catch (FirebaseMessagingException e) {
+                System.err.println("❌ FCM push failed: " + e.getMessage());
+            }
+        }
+    }
+
 
 
 
