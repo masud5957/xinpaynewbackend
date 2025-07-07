@@ -133,19 +133,7 @@ public class EmailService {
     }
     
     
-    public void sendInrDepositEmailAndNotify(User user, double amount) {
-        // Step 1: Send email using existing method
-        sendInrDepositApprovedEmail(user.getEmail(), user.getFullName(), amount);
-
-        // Step 2: Send FCM push notification if token exists
-        if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
-            try {
-                notificationService.sendInrDepositApproved(user.getFcmToken(), amount);
-            } catch (FirebaseMessagingException e) {
-                System.err.println("❌ FCM push failed: " + e.getMessage());
-            }
-        }
-    }
+    
 
 
 

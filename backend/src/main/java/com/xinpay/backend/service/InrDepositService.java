@@ -105,14 +105,20 @@ public class InrDepositService {
                 balanceRepository.save(balance);
 
                 try {
-                    Long userIdLong = Long.parseLong(req.getUserId());
+                    Long userIdLong = Long.parseLong(req.getUserId()); // Convert String → Long
                     userRepository.findById(userIdLong).ifPresent(user -> {
-                        emailService.sendInrDepositEmailAndNotify(user, req.getAmount());
+                        // ✅ Send Email
+                        emailService.sendInrDepositApprovedEmail(
+                                user.getEmail(),
+                                user.getFullName(),
+                                req.getAmount()
+                        );
+
+                        
                     });
                 } catch (NumberFormatException e) {
                     System.err.println("Invalid userId format: " + req.getUserId());
                 }
-
             }
 
             return true;
