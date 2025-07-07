@@ -1,3 +1,4 @@
+// ✅ REPOSITORY
 package com.xinpay.backend.repository;
 
 import com.xinpay.backend.model.InrDepositRequest;
@@ -10,9 +11,9 @@ public interface InrDepositRequestRepository extends JpaRepository<InrDepositReq
 
     Optional<InrDepositRequest> findTopByUserIdOrderByIdDesc(String userId);
 
-    List<InrDepositRequest> findByVerifiedFalse();
+    List<InrDepositRequest> findByVerifiedFalseAndRejectedFalse();
 
     List<InrDepositRequest> findAllByUserIdOrderByIdDesc(String userId);
 
-    List<InrDepositRequest> findByUserIdAndVerifiedTrue(String userId); // ✅ For balance calculation
+    List<InrDepositRequest> findByUserIdAndVerifiedTrue(String userId);
 }
