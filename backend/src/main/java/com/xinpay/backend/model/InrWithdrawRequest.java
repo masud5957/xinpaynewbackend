@@ -2,8 +2,9 @@ package com.xinpay.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "inr_withdraw_requests")
@@ -21,22 +22,30 @@ public class InrWithdrawRequest {
 
     private String ifscCode;
 
-    private boolean approved;
+    private boolean approved = false;
+
+    private boolean rejected = false;
 
     @CreationTimestamp
     @Column(updatable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime requestedAt;
 
-    public InrWithdrawRequest() {}
+    public InrWithdrawRequest() {
+        this.approved = false;
+        this.rejected = false;
+    }
 
-    public InrWithdrawRequest(String userId, Double amount, String accountNumber, String ifscCode, boolean approved) {
+    public InrWithdrawRequest(String userId, Double amount, String accountNumber, String ifscCode) {
         this.userId = userId;
         this.amount = amount;
         this.accountNumber = accountNumber;
         this.ifscCode = ifscCode;
-        this.approved = approved;
+        this.approved = false;
+        this.rejected = false;
     }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -86,6 +95,14 @@ public class InrWithdrawRequest {
         this.approved = approved;
     }
 
+    public boolean isRejected() {
+        return rejected;
+    }
+
+    public void setRejected(boolean rejected) {
+        this.rejected = rejected;
+    }
+
     public LocalDateTime getRequestedAt() {
         return requestedAt;
     }
@@ -94,5 +111,3 @@ public class InrWithdrawRequest {
         this.requestedAt = requestedAt;
     }
 }
-
-

@@ -6,8 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface InrWithdrawRequestRepository extends JpaRepository<InrWithdrawRequest, Long> {
-
-    List<InrWithdrawRequest> findByApprovedFalse();
-
+    List<InrWithdrawRequest> findByApprovedFalseAndRejectedFalse();
     List<InrWithdrawRequest> findAllByUserIdOrderByIdDesc(String userId);
 }

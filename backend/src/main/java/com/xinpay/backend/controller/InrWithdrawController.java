@@ -5,6 +5,7 @@ import com.xinpay.backend.service.InrWithdrawService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -37,6 +38,7 @@ public class InrWithdrawController {
             entry.put("accountNumber", req.getAccountNumber());
             entry.put("ifscCode", req.getIfscCode());
             entry.put("approved", req.isApproved());
+            entry.put("rejected", req.isRejected());
             if (req.getRequestedAt() != null) {
                 entry.put("requestedAt", formatter.format(req.getRequestedAt()));
             }
@@ -49,11 +51,17 @@ public class InrWithdrawController {
     @PutMapping("/{id}/approve")
     public ResponseEntity<String> approveWithdraw(@PathVariable Long id) {
         boolean approved = withdrawService.approveWithdrawal(id);
-        if (approved) {
-            return ResponseEntity.ok("✅ Withdrawal approved successfully.");
-        } else {
-            return ResponseEntity.status(404).body("❌ Request not found or insufficient balance.");
-        }
+        return approved
+                ? ResponseEntity.ok("✅ Withdrawal approved.")
+                : ResponseEntity.status(404).body("❌ Request not found or balance insufficient.");
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<String> rejectWithdraw(@PathVariable Long id) {
+        boolean rejected = withdrawService.rejectWithdrawal(id);
+        return rejected
+                ? ResponseEntity.ok("❌ Withdrawal rejected.")
+                : ResponseEntity.status(404).body("❌ Request not found or already processed.");
     }
 
     @GetMapping("/all/{userId}")
@@ -69,6 +77,7 @@ public class InrWithdrawController {
             row.put("accountNumber", entry.getAccountNumber());
             row.put("ifscCode", entry.getIfscCode());
             row.put("approved", entry.isApproved());
+            row.put("rejected", entry.isRejected());
             if (entry.getRequestedAt() != null) {
                 row.put("requestedAt", formatter.format(entry.getRequestedAt()));
             }
