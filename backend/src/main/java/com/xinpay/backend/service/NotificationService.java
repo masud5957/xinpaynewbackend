@@ -17,7 +17,7 @@ public class NotificationService {
                 .setToken(fcmToken)
                 .setNotification(notification)
                 .build();
-
+        
         String response = FirebaseMessaging.getInstance().send(message);
         System.out.println("✅ Notification sent: " + response);
     }

@@ -40,7 +40,9 @@ public class SecurityConfig {
                 		"/api/user/**",
                     "/api/commissions/**",
                     "/api/wallet/**",
-                    "/api/balance/**"            // ✅ Balance
+                    "/api/balance/**",         // ✅ Balance
+                    "/api/test/**"
+                    
                 ).permitAll()
                 .anyRequest().authenticated()   // 🔐 Require auth for other routes
             )
