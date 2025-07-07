@@ -105,20 +105,34 @@ public class InrDepositService {
                 balanceRepository.save(balance);
 
                 try {
-                    Long userIdLong = Long.parseLong(req.getUserId()); // Convert String → Long
+                    Long userIdLong = Long.parseLong(req.getUserId());
                     userRepository.findById(userIdLong).ifPresent(user -> {
-                        // ✅ Send Email
-                        emailService.sendInrDepositApprovedEmail(
-                                user.getEmail(),
-                                user.getFullName(),
-                                req.getAmount()
-                        );
 
-                        
+                        // Send email safely
+                        try {
+                            emailService.sendInrDepositApprovedEmail(
+                                    user.getEmail(),
+                                    user.getFullName(),
+                                    req.getAmount()
+                            );
+                        } catch (Exception e) {
+                            System.err.println("❌ Email failed: " + e.getMessage());
+                        }
+
+                        // Send FCM safely
+                        try {
+                            if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
+                                notificationService.sendInrDepositApproved(user.getFcmToken(), req.getAmount());
+                            }
+                        } catch (FirebaseMessagingException e) {
+                            System.err.println("❌ FCM failed: " + e.getMessage());
+                        }
+
                     });
                 } catch (NumberFormatException e) {
                     System.err.println("Invalid userId format: " + req.getUserId());
                 }
+
             }
 
             return true;
