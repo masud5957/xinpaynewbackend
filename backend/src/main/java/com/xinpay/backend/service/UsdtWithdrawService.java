@@ -47,6 +47,22 @@ public class UsdtWithdrawService {
                 balanceService.subtractUsdt(request.getUserId(), request.getAmount());
                 request.setApproved(true);
                 withdrawRepo.save(request);
+                
+                
+                try {
+                    Long userIdLong = Long.parseLong(request.getUserId());
+                    userRepository.findById(userIdLong).ifPresent(user -> {
+                        emailService.sendUsdtWithdrawApprovedEmail(
+                                user.getEmail(),
+                                user.getFullName(),
+                                request.getAmount()
+                        );
+                    });
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid userId: " + request.getUserId());
+                }
+                
+                
                 return true;
             } else {
                 throw new RuntimeException("Insufficient USDT balance.");

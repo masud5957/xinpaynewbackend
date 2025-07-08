@@ -75,6 +75,16 @@ public class InrDepositService {
 
             balance.setInrBalance(balance.getInrBalance() + req.getAmount());
             balanceRepository.save(balance);
+            
+            
+            try {
+                Long userIdLong = Long.parseLong(req.getUserId());
+                userRepository.findById(userIdLong).ifPresent(user -> {
+                    emailService.sendInrDepositApprovedEmail(user.getEmail(), user.getFullName(), req.getAmount());
+                });
+            } catch (NumberFormatException ignored) {}
+            
+            
         }
         return true;
     }
