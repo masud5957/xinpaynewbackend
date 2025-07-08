@@ -30,8 +30,18 @@ public class InrDepositService {
     private EmailService emailService;
 
     public InrDepositRequest uploadDeposit(String userId, MultipartFile file, Double amount) throws IOException {
-        String fileName = UUID.randomUUID() + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        String originalName = file.getOriginalFilename();
+        if (amount == null || amount <= 0 || originalName == null || originalName.isEmpty() || file.getSize() == 0) {
+            throw new IOException("Invalid input");
+        }
+
+        String extension = originalName.contains(".") ? originalName.substring(originalName.lastIndexOf('.')) : "";
+        String fileName = UUID.randomUUID() + extension;
+
         String uploadDir = System.getProperty("user.home") + File.separator + "xinpay-uploads" + File.separator;
+        File uploadPath = new File(uploadDir);
+        if (!uploadPath.exists()) uploadPath.mkdirs();
+
         File destination = new File(uploadDir + fileName);
         file.transferTo(destination);
 
@@ -44,6 +54,7 @@ public class InrDepositService {
 
         return inrDepositRequestRepository.save(deposit);
     }
+
 
     public boolean verifyDeposit(Long id) {
         Optional<InrDepositRequest> opt = inrDepositRequestRepository.findById(id);
