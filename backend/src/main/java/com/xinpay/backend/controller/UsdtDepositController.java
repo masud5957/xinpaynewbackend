@@ -46,7 +46,7 @@ public class UsdtDepositController {
         List<UsdtDepositRequest> pending = usdtDepositService.getPendingDeposits();
         List<Map<String, Object>> result = new ArrayList<>();
 
-        String baseUrl = "https://xinpay-backend.onrender.com"; // Replace with actual deployed URL
+        String baseUrl = "https://xinpaynewbackend.onrender.com"; // Replace with actual deployed URL
 
         for (UsdtDepositRequest deposit : pending) {
             Map<String, Object> row = new HashMap<>();
